@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "340862163668",
+    "project_id": "trabalhomeupai",
+    "storage_bucket": "trabalhomeupai.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:340862163668:android:6bb401d620e83c0b37b941",
+        "android_client_info": {
+          "package_name": "com.example.distribuidora"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaOKXk5MQcpmTy8lGJnUUvpiFG0mawNDc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
