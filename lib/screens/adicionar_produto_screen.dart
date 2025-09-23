@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/produto.dart';
 import '../services/produto_service.dart';
+import 'scanner_screen.dart';
 
 class AdicionarProdutoScreen extends StatefulWidget {
   final String? codigoBarras;
@@ -118,19 +119,34 @@ class _AdicionarProdutoScreenState extends State<AdicionarProdutoScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          TextFormField(
-            controller: _codigoBarrasController,
-            decoration: const InputDecoration(
-              labelText: 'Código de Barras',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.qr_code),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Campo obrigatório';
-              }
-              return null;
-            },
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _codigoBarrasController,
+                  decoration: const InputDecoration(
+                    labelText: 'Código de Barras',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.qr_code),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Campo obrigatório';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: _abrirScanner,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6C63FF),
+                  padding: const EdgeInsets.all(16),
+                ),
+                child: const Icon(Icons.qr_code_scanner, color: Colors.white),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           TextFormField(
@@ -298,6 +314,22 @@ class _AdicionarProdutoScreenState extends State<AdicionarProdutoScreen> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  void _abrirScanner() async {
+    final resultado = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ScannerScreen(),
+        settings: const RouteSettings(arguments: 'adicionar'),
+      ),
+    );
+    
+    if (resultado != null) {
+      setState(() {
+        _codigoBarrasController.text = resultado;
+      });
     }
   }
 

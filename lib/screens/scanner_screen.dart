@@ -82,6 +82,13 @@ class _ScannerScreenState extends State<ScannerScreen> {
       _isProcessing = true;
     });
 
+    // Verifica se foi chamado da tela de adicionar produto
+    final route = ModalRoute.of(context);
+    if (route != null && route.settings.arguments == 'adicionar') {
+      Navigator.pop(context, codigoBarras);
+      return;
+    }
+
     try {
       final produto = await _produtoService.buscarPorCodigoBarras(codigoBarras);
       
