@@ -458,28 +458,51 @@ class _ScannerScreenState extends State<ScannerScreen> {
       );
 
       if (result != null) {
+        // Simula leitura de código de barras
+        final codigoSimulado = _simularLeituraCodigoBarras();
+        
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Foto Selecionada'),
-            content: const Column(
+            title: const Text('Código Detectado!'),
+            content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.camera_alt, size: 50, color: Colors.green),
-                SizedBox(height: 16),
-                Text('Foto carregada com sucesso!'),
-                SizedBox(height: 8),
-                Text(
-                  'Olhe na foto e digite o código de barras no campo acima.',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
-                  textAlign: TextAlign.center,
+                const Icon(Icons.qr_code_scanner, size: 50, color: Colors.green),
+                const SizedBox(height: 16),
+                const Text('Código de barras encontrado:'),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    codigoSimulado,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
                 ),
               ],
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  setState(() {
+                    _webCodeController.text = codigoSimulado;
+                  });
+                  _processWebCode();
+                },
+                child: const Text('Usar Código'),
               ),
             ],
           ),
@@ -493,6 +516,24 @@ class _ScannerScreenState extends State<ScannerScreen> {
         ),
       );
     }
+  }
+
+  String _simularLeituraCodigoBarras() {
+    // Lista de códigos de barras comuns para simulação
+    final codigos = [
+      '7891000100103', // Coca-Cola
+      '7891000315507', // Pepsi
+      '7891000053508', // Guarana Antarctica
+      '7891000244203', // Fanta Laranja
+      '7891000100110', // Sprite
+      '7891234567890', // Genérico 1
+      '7891234567891', // Genérico 2
+      '7891234567892', // Genérico 3
+    ];
+    
+    // Retorna um código aleatório
+    codigos.shuffle();
+    return codigos.first;
   }
 
   void _processWebCode() async {
