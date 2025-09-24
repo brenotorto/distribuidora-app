@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:file_picker/file_picker.dart';
 import '../services/produto_service.dart';
 import 'produto_detalhes_screen.dart';
 import 'adicionar_produto_screen.dart';
@@ -14,10 +16,17 @@ class ScannerScreen extends StatefulWidget {
 class _ScannerScreenState extends State<ScannerScreen> {
   final ProdutoService _produtoService = ProdutoService();
   MobileScannerController cameraController = MobileScannerController();
+  final TextEditingController _webCodeController = TextEditingController();
   bool _isProcessing = false;
 
   @override
   Widget build(BuildContext context) {
+    // Versão web - input manual
+    if (kIsWeb) {
+      return _buildWebVersion(context);
+    }
+    
+    // Versão mobile - scanner real
     return Scaffold(
       appBar: AppBar(
         title: const Text('Scanner de Código de Barras'),
@@ -65,6 +74,78 @@ class _ScannerScreenState extends State<ScannerScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildWebVersion(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Inserir Código de Barras'),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.qr_code,
+              size: 100,
+              color: Colors.blue,
+            ),
+            const SizedBox(height: 30),
+            const Text(
+              'Digite o código de barras:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _webCodeController,
+              decoration: const InputDecoration(
+                labelText: 'Código de Barras',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.qr_code),
+              ),
+              keyboardType: TextInputType.number,
+              autofocus: true,
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _processWebCode,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Text(
+                      'Buscar',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _pickImage,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    icon: const Icon(Icons.camera_alt, color: Colors.white),
+                    label: const Text(
+                      'Foto',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -363,9 +444,74 @@ class _ScannerScreenState extends State<ScannerScreen> {
     );
   }
 
+  void _pickImage() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+      );
+
+      if (result != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Foto selecionada! Digite o código manualmente por enquanto.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao selecionar foto: $e')),
+      );
+    }
+  }
+
+  void _processWebCode() async {
+    final codigo = _webCodeController.text.trim();
+    if (codigo.isEmpty) return;
+
+    setState(() {
+      _isProcessing = true;
+    });
+
+    // Verifica se foi chamado da tela de adicionar produto
+    final route = ModalRoute.of(context);
+    if (route != null && route.settings.arguments == 'adicionar') {
+      Navigator.pop(context, codigo);
+      return;
+    }
+
+    try {
+      final produto = await _produtoService.buscarPorCodigoBarras(codigo);
+      
+      if (mounted) {
+        if (produto != null) {
+          _mostrarDialogoAcao(produto);
+        } else {
+          _mostrarDialogoProdutoNaoEncontrado(codigo);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao buscar produto: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+    }
+  }
+
   @override
   void dispose() {
-    cameraController.dispose();
+    if (!kIsWeb) {
+      cameraController.dispose();
+    }
+    _webCodeController.dispose();
     super.dispose();
   }
 }
