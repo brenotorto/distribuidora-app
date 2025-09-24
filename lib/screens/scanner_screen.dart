@@ -97,8 +97,14 @@ class _ScannerScreenState extends State<ScannerScreen> {
             ),
             const SizedBox(height: 30),
             const Text(
-              'Digite o código de barras:',
+              'Digite o código ou tire uma foto:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Dica: Use o botão foto para ver o código e digite no campo abaixo',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
             TextField(
@@ -452,16 +458,39 @@ class _ScannerScreenState extends State<ScannerScreen> {
       );
 
       if (result != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Foto selecionada! Digite o código manualmente por enquanto.'),
-            backgroundColor: Colors.orange,
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Foto Selecionada'),
+            content: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.camera_alt, size: 50, color: Colors.green),
+                SizedBox(height: 16),
+                Text('Foto carregada com sucesso!'),
+                SizedBox(height: 8),
+                Text(
+                  'Olhe na foto e digite o código de barras no campo acima.',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
           ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao selecionar foto: $e')),
+        SnackBar(
+          content: Text('Erro ao selecionar foto: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
