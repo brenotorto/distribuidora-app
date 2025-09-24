@@ -451,71 +451,23 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 
   void _pickImage() async {
-    try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.image,
-        allowMultiple: false,
-      );
-
-      if (result != null) {
-        // Simula leitura de código de barras
-        final codigoSimulado = _simularLeituraCodigoBarras();
-        
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Código Detectado!'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.qr_code_scanner, size: 50, color: Colors.green),
-                const SizedBox(height: 16),
-                const Text('Código de barras encontrado:'),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    codigoSimulado,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'monospace',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancelar'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  setState(() {
-                    _webCodeController.text = codigoSimulado;
-                  });
-                  _processWebCode();
-                },
-                child: const Text('Usar Código'),
-              ),
-            ],
-          ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao selecionar foto: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+    // Simula leitura automática de código de barras
+    final codigoSimulado = _simularLeituraCodigoBarras();
+    
+    setState(() {
+      _webCodeController.text = codigoSimulado;
+    });
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Código detectado: $codigoSimulado'),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+    
+    // Busca automaticamente
+    _processWebCode();
   }
 
   String _simularLeituraCodigoBarras() {
